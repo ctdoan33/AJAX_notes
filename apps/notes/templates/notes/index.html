@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <title>AJAX Notes</title>
+    <script>
+        function attach_delete(){
+            $('.ajax_delete').submit(function(e){
+                e.preventDefault();
+                $.ajax({
+                    url: $(this).attr('action'),
+                    method: 'post',
+                    data: $(this).serialize(),
+                    success: function(serverResponse){
+                        $('.notes').html(serverResponse)
+                    }
+                });
+            });
+        }
+        function attach_desc(){
+            $('.ajax_update').keyup(function(e){
+                $.ajax({
+                    url: $(this).attr('action'),
+                    method: 'post',
+                    data: $(this).serialize(),
+                    success: function(serverResponse){
+                        console.log(serverResponse)
+                    }
+                });
+            });
+        }
+        $(document).ready(function(){
+            attach_delete();
+            attach_desc();
+            $('.ajax_form').submit(function(e){
+                e.preventDefault();
+                $.ajax({
+                    url: $(this).attr('action'),
+                    method: 'post',
+                    data: $(this).serialize(),
+                    success: function(serverResponse){
+                        $('.notes').html(serverResponse);
+                        attach_delete();
+                        attach_desc();
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <h2>Notes</h2>
+    <div class="notes">
+        {% for note in notes %}
+        <h3>{{note.title}}</h3>
+        <form action="/delete/{{note.id}}" method="post" class="ajax_delete">
+            {% csrf_token %}
+            <input type="submit" value="delete">
+        </form>
+        <form action="/update/{{note.id}}" method="post" class="ajax_update">
+            {% csrf_token %}
+            {% if note.description != None %}
+            <textarea name="description">{{note.description}}</textarea>
+            {% else %}
+            <textarea placeholder="Enter description here..." name="description"></textarea>
+            {% endif %}
+        </form>
+        {% endfor %}
+    </div>
+    <form action="/create" method="post" class="ajax_form">
+        {% csrf_token %}
+        <input type="text" name="title">
+        <input type="submit" value="Add Note">
+    </form>
+</body>
+</html>
